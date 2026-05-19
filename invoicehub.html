@@ -129,7 +129,29 @@ label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2937;color:white;padding:10px 20px;border-radius:20px;font-size:0.85rem;z-index:200;opacity:0;transition:opacity 0.3s;font-family:inherit}
 .toast.show{opacity:1}
 .hidden{display:none!important}
-@media(max-width:400px){.stats-row{grid-template-columns:1fr 1fr}.form-row .flex1,.form-row .flex2{min-width:100%}.scan-btn{padding:16px 24px;font-size:1.1rem}.carrier-barcode{font-size:1.4rem;padding:12px 16px}}
+/* ── Spending Chart ── */
+.spending-chart{padding:8px 12px;background:#F8FAFC;border-bottom:1px solid var(--border)}
+.spending-chart .chart-row{display:flex;gap:4px;align-items:flex-end;margin-top:4px}
+.spending-chart .range-group{flex:1;min-width:50px;text-align:center}
+.spending-chart .range-label{font-size:0.6rem;color:var(--muted)}
+.spending-chart .range-bar{height:20px;border-radius:3px;min-width:4px;width:100%;max-width:60px;margin:0 auto;transition:height 0.3s}
+.spending-chart .range-count{font-size:0.7rem;font-weight:700;color:var(--text)}
+.spending-chart .range-1 .range-bar{background:linear-gradient(180deg,#10B981,#34D399)}
+.spending-chart .range-2 .range-bar{background:linear-gradient(180deg,#F59E0B,#FBBF24)}
+.spending-chart .range-3 .range-bar{background:linear-gradient(180deg,#F97316,#FB923C)}
+.spending-chart .range-4 .range-bar{background:linear-gradient(180deg,#EF4444,#F87171)}
+.spending-chart .total-bar-wrap{margin-top:6px}
+.spending-chart .total-bar-label{font-size:0.65rem;color:var(--muted);margin-bottom:2px}
+.spending-chart .total-bar-outer{height:8px;border-radius:4px;background:#E2E8F0;overflow:hidden}
+.spending-chart .total-bar-inner{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),#06B6D4);transition:width 0.4s}
+/* ── Carrier Badge ── */
+.carrier-badge{font-size:0.8rem;margin-left:4px;vertical-align:middle;opacity:0.75}
+/* ── Insight Row ── */
+.insight-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 12px}
+.insight-card{background:var(--card);border-radius:var(--radius);padding:10px 8px;text-align:center;box-shadow:var(--shadow);border-left:3px solid var(--cyan)}
+.insight-card .ilabel{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.insight-card .ivalue{font-size:1.1rem;font-weight:900;color:var(--cyan-dark)}
+@media(max-width:400px){.stats-row{grid-template-columns:1fr 1fr}.insight-row{grid-template-columns:1fr 1fr}.form-row .flex1,.form-row .flex2{min-width:100%}.scan-btn{padding:16px 24px;font-size:1.1rem}.carrier-barcode{font-size:1.4rem;padding:12px 16px}}
 </style>
 </head>
 <body>
@@ -168,6 +190,11 @@ label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
         <div class="stat-card"><div class="label">未兌</div><div class="value" id="totalActive">0</div></div>
         <div class="stat-card"><div class="label">已凍</div><div class="value" id="totalFrozen">0</div></div>
         <div class="stat-card gold"><div class="label">捐贈</div><div class="value" id="totalDonated">0</div></div>
+      </div>
+      <div class="insight-row" id="insightRow">
+        <div class="insight-card"><div class="ilabel">月均發票</div><div class="ivalue" id="avgInvoice">$0</div></div>
+        <div class="insight-card"><div class="ilabel">本月最高</div><div class="ivalue" id="maxInvoice">$0</div></div>
+        <div class="insight-card"><div class="ilabel">總金額</div><div class="ivalue" id="totalAmount">$0</div></div>
       </div>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="🔍 搜尋發票號碼、日期..." oninput="renderInvoices()">
@@ -437,9 +464,23 @@ function groupByMonth(invs){
 function renderInvoices(){
   const active=invoices.filter(i=>i.status==='active').length;
   const frozen=invoices.filter(i=>i.status==='frozen').length;
+  const donated=invoices.filter(i=>i.status==='donated').length;
   document.getElementById('totalInvoices').textContent=invoices.length;
   document.getElementById('totalActive').textContent=active;
   document.getElementById('totalFrozen').textContent=frozen;
+  document.getElementById('totalDonated').textContent=donated;
+
+  // Insight stats
+  const now=new Date();
+  const thisMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const thisMonthInvs=invoices.filter(i=>i.period===thisMonth||i.date===thisMonth);
+  const totalAmt=invoices.reduce((s,i)=>s+i.amount,0);
+  const maxAmt=invoices.length>0?Math.max(...invoices.map(i=>i.amount)):0;
+  const months=new Set(invoices.map(i=>i.period||i.date)).size||1;
+  const avgAmt=Math.round(totalAmt/months);
+  document.getElementById('avgInvoice').textContent='$'+fmt(avgAmt);
+  document.getElementById('maxInvoice').textContent='$'+fmt(maxAmt);
+  document.getElementById('totalAmount').textContent='$'+fmt(totalAmt);
 
   // Search and filter
   const keyword=(document.getElementById('searchInput')?.value||'').toLowerCase();
@@ -461,16 +502,23 @@ function renderInvoices(){
     const [y,m]=month.split('-');
     const label=`${y}年${m}月`;
     const total=monthInvs.reduce((s,i)=>s+i.amount,0);
+    // Spending ranges for mini chart
+    const ranges=[{max:99,count:monthInvs.filter(i=>i.amount<100).length},{max:499,count:monthInvs.filter(i=>i.amount>=100&&i.amount<500).length},{max:999,count:monthInvs.filter(i=>i.amount>=500&&i.amount<1000).length},{max:999999,count:monthInvs.filter(i=>i.amount>=1000).length}];
+    const maxCount=Math.max(...ranges.map(r=>r.count),1);
+    const barColors=['#059669','#3B82F6','#F59E0B','#DC2626'];
+    const chartHtml=ranges.map((r,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="height:${(r.count/maxCount)*30}px;width:100%;background:${barColors[i]};border-radius:3px 3px 0 0;min-height:${r.count>0?3:0}px"></div><div style="font-size:0.55rem;color:var(--muted)">${r.max>=999?'>1K':r.max}</div></div>`).join('');
     html+=`<div class="month-group">
       <div class="month-header" onclick="toggleMonth('${month}')">
         <span>${label}（${monthInvs.length}張，合計 $${fmt(total)}）</span>
         <span class="toggle" id="toggle-${month.replace('-','')}">▼</span>
       </div>
+      <div style="display:flex;align-items:flex-end;gap:3px;padding:4px 12px;font-size:0.65rem;color:var(--muted)">${chartHtml}</div>
       <div id="month-${month.replace('-','')}">`;
     monthInvs.forEach(inv=>{
+      const carrierIcon={mobile_barcode:'📱',natural_id:'🔐',love_code:'❤️'}[inv.carrier_type]||'';
       html+=`<div class="invoice-item">
         <div class="invoice-info">
-          <div class="invoice-number">${inv.invoice_number}</div>
+          <div class="invoice-number">${inv.invoice_number} <span class="carrier-badge">${carrierIcon}</span></div>
           <div class="invoice-date">${inv.date}　$${fmt(inv.amount)}</div>
         </div>
         <span class="status-badge status-${inv.status}">${statusLabel(inv.status)}</span>
