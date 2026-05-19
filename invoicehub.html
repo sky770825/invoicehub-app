@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvoiceHub 發票歸戶 — 發票拍一拍，中獎不漏接</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<style>
+:root{--cyan:#0891B2;--cyan-dark:#0E7490;--gold:#FFD700;--gold-dark:#B8860B;--green:#059669;--red:#DC2626;--bg:#F0F9FA;--card:#FFFFFF;--text:#0F172A;--muted:#64748B;--border:#E2E8F0;--shadow:0 1px 3px rgba(0,0,0,0.1);--radius:12px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.container{max-width:640px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:20px 0 12px}
+.header h1{font-size:1.6rem;font-weight:900;color:var(--cyan-dark);letter-spacing:1px}
+.header .tagline{font-size:0.85rem;color:var(--muted);margin-top:4px}
+.tab-bar{display:flex;gap:4px;margin:12px 0;background:#E2E8F0;border-radius:10px;padding:4px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;border:none;background:transparent;font-family:inherit;transition:all 0.15s;color:var(--muted)}
+.tab.active{background:var(--card);color:var(--cyan);box-shadow:var(--shadow)}
+.lock-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
+.lock-icon{font-size:48px}
+.lock-screen input[type="password"]{width:100%;max-width:280px;padding:12px 16px;border:2px solid var(--cyan);border-radius:var(--radius);font-size:1.1rem;font-family:inherit;text-align:center;background:var(--card)}
+.lock-screen button{padding:12px 32px;background:var(--cyan);color:white;border:none;border-radius:var(--radius);font-size:1rem;font-weight:700;font-family:inherit;cursor:pointer}
+.lock-screen .error{color:var(--red);font-size:0.875rem}
+.setup-screen{text-align:center;padding:40px 0}
+.setup-screen h2{margin-bottom:16px;color:var(--cyan-dark)}
+.setup-screen input{width:100%;max-width:280px;padding:12px 16px;border:2px solid var(--cyan);border-radius:var(--radius);font-size:1.1rem;font-family:inherit;text-align:center;margin-bottom:12px;background:var(--card)}
+.setup-screen button{padding:12px 32px;background:var(--cyan);color:white;border:none;border-radius:var(--radius);font-size:1rem;font-weight:700;font-family:inherit;cursor:pointer}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin:12px 0}
+.btn-primary{padding:12px 24px;background:var(--cyan);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+.btn-primary:hover{background:var(--cyan-dark)}
+.btn-secondary{padding:10px 16px;background:#E2E8F0;color:var(--text);border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-danger{padding:10px 16px;background:#FEE2E2;color:var(--red);border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+input[type="text"],input[type="number"],input[type="date"],select{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-size:1rem;font-family:inherit;background:var(--card);margin-bottom:8px}
+input:focus,select:focus{border-color:var(--cyan);outline:none}
+.form-row{display:flex;gap:8px;flex-wrap:wrap}
+.form-row .flex1{flex:1;min-width:120px}
+.form-row .flex2{flex:2;min-width:200px}
+label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
+.invoice-list{margin-top:8px}
+.month-group{margin-bottom:16px}
+.month-header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--cyan);color:white;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.95rem}
+.month-header .toggle{font-size:1.2rem}
+.invoice-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.invoice-item:last-child{border-bottom:none}
+.invoice-info{flex:1;min-width:0}
+.invoice-number{font-weight:700;font-size:1.1rem;letter-spacing:2px}
+.invoice-date{font-size:0.8rem;color:var(--muted)}
+.invoice-amount{font-size:1.1rem;font-weight:700;color:var(--cyan)}
+.status-badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;display:inline-block}
+.status-active{background:#D1FAE5;color:var(--green)}
+.status-claimed{background:#E2E8F0;color:var(--muted)}
+.status-frozen{background:#CFFAFE;color:var(--cyan)}
+.action-btns{display:flex;gap:4px;flex-wrap:wrap}
+.icon-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:0.85rem;font-family:inherit}
+.icon-btn:hover{background:#F3F4F6}
+.icon-btn.danger{color:var(--red);border-color:#FECACA}
+.scan-section{text-align:center;padding:16px 0}
+.scan-btn{padding:16px 32px;background:var(--cyan);color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.scan-btn:hover{background:var(--cyan-dark)}
+#reader{width:100%;max-width:320px;margin:12px auto;border-radius:var(--radius);overflow:hidden;display:none}
+#reader video{border-radius:var(--radius)}
+.lottery-result{text-align:center;padding:20px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:var(--radius);margin:12px 0;border:2px solid var(--gold)}
+.lottery-result h3{color:var(--gold-dark);font-size:1.2rem;margin-bottom:8px}
+.lottery-result .win-amount{font-size:2rem;font-weight:900;color:var(--red);margin:8px 0}
+.lottery-result .lose{font-size:1rem;color:var(--muted)}
+.carrier-section{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);text-align:center;margin:12px 0}
+.carrier-barcode{font-family:monospace;font-size:1.4rem;font-weight:700;letter-spacing:3px;color:var(--cyan);background:#F0F9FA;padding:12px 20px;border-radius:8px;display:inline-block;border:2px dashed var(--cyan);margin-top:8px}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat-card .label{font-size:0.7rem;color:var(--muted);text-transform:uppercase}
+.stat-card .value{font-size:1.5rem;font-weight:900;color:var(--cyan)}
+.toolbar{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2937;color:white;padding:10px 20px;border-radius:20px;font-size:0.85rem;z-index:200;opacity:0;transition:opacity 0.3s;font-family:inherit}
+.toast.show{opacity:1}
+@media(max-width:400px){.stats-row{grid-template-columns:1fr 1fr}.form-row .flex1,.form-row .flex2{min-width:100%}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><h1>🧾 InvoiceHub</h1><div class="tagline">發票拍一拍，中獎不漏接</div></div>
+  <div class="tab-bar">
+    <button class="tab active" data-tab="list" onclick="switchTab('list')">📋 發票列表</button>
+    <button class="tab" data-tab="add" onclick="switchTab('add')">➕ 手動歸戶</button>
+    <button class="tab" data-tab="lottery" onclick="switchTab('lottery')">🎰 對獎</button>
+    <button class="tab" data-tab="carrier" onclick="switchTab('carrier')">📱 載具</button>
+  </div>
+
+  <!-- Lock -->
+  <div id="lockScreen" class="lock-screen hidden">
+    <div class="lock-icon">🔐</div>
+    <input type="password" id="pwInput" placeholder="輸入管理密碼" maxlength="64">
+    <button onclick="unlock()">解鎖</button>
+    <div class="error" id="lockError"></div>
+  </div>
+
+  <!-- Setup -->
+  <div id="setupScreen" class="setup-screen hidden">
+    <h2>初次設定</h2>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">設定管理密碼保護您的發票資料</p>
+    <input type="password" id="setupPw" placeholder="設定密碼（至少4碼）" maxlength="64">
+    <button onclick="setupPassword()">開始使用</button>
+  </div>
+
+  <!-- Main -->
+  <div id="mainApp" class="hidden">
+
+    <!-- Tab: list -->
+    <div id="tab-list">
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">總發票</div><div class="value" id="totalInvoices">0</div></div>
+        <div class="stat-card"><div class="label">未兌</div><div class="value" id="totalActive">0</div></div>
+        <div class="stat-card"><div class="label">已凍</div><div class="value" id="totalFrozen">0</div></div>
+      </div>
+      <div id="invoiceList" class="invoice-list"></div>
+    </div>
+
+    <!-- Tab: add -->
+    <div id="tab-add" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom:12px;color:var(--cyan-dark)">手動輸入發票</h3>
+        <label>發票號碼（10位）</label>
+        <input type="text" id="invNumber" placeholder="AB-12345678" maxlength="12">
+        <div class="form-row">
+          <div class="flex1">
+            <label>開立年月</label>
+            <input type="month" id="invMonth">
+          </div>
+          <div class="flex1">
+            <label>消費金額</label>
+            <input type="number" id="invAmount" placeholder="0" min="1">
+          </div>
+        </div>
+        <label>載具類型</label>
+        <select id="invCarrierType">
+          <option value="mobile_barcode">📱 手機條碼</option>
+          <option value="natural_id">🔐 自然人憑證</option>
+          <option value="love_code">❤️ 愛心碼</option>
+        </select>
+        <input type="text" id="invCarrierNum" placeholder="載具號碼（手機條碼如 /ABC123456）">
+        <button class="btn-primary" onclick="addInvoice()">✅ 歸戶發票</button>
+      </div>
+      <div class="scan-section">
+        <p style="color:var(--muted);margin-bottom:12px;">或使用相機掃描 QR Code</p>
+        <button class="scan-btn" onclick="startScan()">📷 開啟相機掃描</button>
+        <div id="reader"></div>
+      </div>
+    </div>
+
+    <!-- Tab: lottery -->
+    <div id="tab-lottery" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom:12px;color:var(--cyan-dark)">自動對獎</h3>
+        <label>選擇期別</label>
+        <select id="lotteryPeriod"></select>
+        <button class="btn-primary" onclick="runLottery()">🔍 開始對獎</button>
+      </div>
+      <div id="lotteryResult"></div>
+    </div>
+
+    <!-- Tab: carrier -->
+    <div id="tab-carrier" class="hidden">
+      <div class="carrier-section">
+        <h3 style="margin-bottom:8px;color:var(--cyan-dark)">我的手機條碼</h3>
+        <input type="text" id="carrierBarcode" placeholder="/ABC123456" style="text-align:center;font-size:1.2rem;letter-spacing:3px;">
+        <button class="btn-primary" onclick="saveCarrier()" style="margin-top:8px;">💾 儲存載具</button>
+      </div>
+      <div class="toolbar">
+        <button class="btn-secondary" onclick="exportInvoices()">📤 匯出資料</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📥 匯入</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importInvoices(event)">
+        <button class="btn-danger" onclick="clearAllInvoices()">🗑 清除全部</button>
+      </div>
+      <button class="btn-secondary" onclick="logout()" style="width:100%;margin-top:8px;">🔒 鎖定</button>
+    </div>
+
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+// ─── State ───
+const STORAGE_KEY='invoicehub_data';
+let invoices=[];
+let settings={admin_password:'',carrier_barcode:'',lottery_numbers:[]};
+let currentTab='list';
+let unlocked=false;
+let html5Qrcode=null;
+
+// ─── Init ───
+function genUUID(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function nowISO(){return new Date().toISOString();}
+function fmt(n){return Number(n).toLocaleString('zh-TW');}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({invoices,settings}));}
+function load(){const raw=localStorage.getItem(STORAGE_KEY);if(raw){const d=JSON.parse(raw);invoices=d.invoices||[];settings=d.settings||{admin_password:'',carrier_barcode:'',lottery_numbers:[]};}}
+
+// ─── Period helpers ───
+// 發票期別：單月開獎（1,3,5,7,9,11月開獎前兩期）
+// 例：2026-05月要對獎的是 2026-03期
+function getCurrentPeriod(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=now.getMonth()+1;
+  // 開獎月為單數月（对上上期）
+  let periodMonth=m-2;
+  let periodYear=y;
+  if(periodMonth<=0){periodMonth+=12;periodYear--;}
+  return{year:periodYear,month:periodMonth};
+}
+
+function periodStr(year,month){return `${year}-${String(month).padStart(2,'0')}`;}
+
+// 財政部目前對獎號碼（化為测试用defaults，实际由用户输入）
+const DEFAULT_LOTTERY={
+  '2026-03':{special:'001','special2':'374','first':['038699','043574','147752'],'sixth':['001','364','598','962']},
+  '2026-01':{special:'868','special2':'210','first':['628995','147948','523272'],'sixth':['210','462','719','884']},
+};
+
+function getPeriodOptions(){
+  const now=new Date();
+  const options=[];
+  // 未來6期
+  for(let i=0;i<6;i++){
+    let m=now.getMonth()+1-i*2;
+    let y=now.getFullYear();
+    while(m<=0){m+=12;y--;}
+    const label=`${y}年${String(m).padStart(2,'0')}月`;
+    options.push({value:periodStr(y,m),label});
+  }
+  return options;
+}
+
+// ─── Tab ───
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  ['list','add','lottery','carrier'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el)el.classList.toggle('hidden',t!==tab);
+  });
+  if(tab==='list')renderInvoices();
+  if(tab==='lottery')renderLotteryTab();
+}
+
+// ─── Invoice CRUD ───
+function addInvoice(){
+  const num=document.getElementById('invNumber').value.trim().toUpperCase().replace(/\s/g,'');
+  const monthVal=document.getElementById('invMonth').value;
+  const amount=parseInt(document.getElementById('invAmount').value,10);
+  const carrierType=document.getElementById('invCarrierType').value;
+  const carrierNum=document.getElementById('invCarrierNum').value.trim();
+  if(!num||num.length<8){showToast('請輸入有效發票號碼');return;}
+  if(!monthVal){showToast('請選擇年月');return;}
+  if(!amount||amount<=0){showToast('請輸入金額');return;}
+  const period=monthVal; // YYYY-MM
+  invoices.push({id:genUUID(),invoice_number:num,date:period,amount,carrier_type:carrierType,carrier_number:carrierNum,status:'active',period,created_at:nowISO()});
+  save();
+  document.getElementById('invNumber').value='';
+  document.getElementById('invAmount').value='';
+  document.getElementById('invCarrierNum').value='';
+  showToast('✓ 發票歸戶成功');
+  switchTab('list');
+}
+
+function cycleStatus(id){
+  const inv=invoices.find(i=>i.id===id);
+  if(!inv)return;
+  const cycle={active:'claimed',claimed:'frozen',frozen:'active'};
+  inv.status=cycle[inv.status];
+  save();
+  renderInvoices();
+  showToast('狀態已更新為 '+statusLabel(inv.status));
+}
+
+function deleteInvoice(id){
+  if(!confirm('確定刪除這張發票？'))return;
+  invoices=invoices.filter(i=>i.id!==id);
+  save();
+  renderInvoices();
+  showToast('已刪除');
+}
+
+function statusLabel(s){
+  return{active:'未兌',claimed:'已兌',frozen:'已凍'}[s]||s;
+}
+
+// ─── Render ───
+function groupByMonth(invs){
+  const groups={};
+  invs.forEach(inv=>{
+    const key=inv.period||inv.date;
+    if(!groups[key])groups[key]=[];
+    groups[key].push(inv);
+  });
+  return Object.keys(groups).sort().reverse();
+}
+
+function renderInvoices(){
+  const active=invoices.filter(i=>i.status==='active').length;
+  const frozen=invoices.filter(i=>i.status==='frozen').length;
+  document.getElementById('totalInvoices').textContent=invoices.length;
+  document.getElementById('totalActive').textContent=active;
+  document.getElementById('totalFrozen').textContent=frozen;
+
+  if(invoices.length===0){
+    document.getElementById('invoiceList').innerHTML='<div class="empty">尚無歸戶發票<br>試著新增一張吧 📋</div>';
+    return;
+  }
+
+  let html='';
+  groupByMonth(invoices).forEach(month=>{
+    const monthInvs=invoices.filter(i=>(i.period||i.date)===month);
+    const [y,m]=month.split('-');
+    const label=`${y}年${m}月`;
+    const total=monthInvs.reduce((s,i)=>s+i.amount,0);
+    html+=`<div class="month-group">
+      <div class="month-header" onclick="toggleMonth('${month}')">
+        <span>${label}（${monthInvs.length}張，合計 $${fmt(total)}）</span>
+        <span class="toggle" id="toggle-${month.replace('-','')}">▼</span>
+      </div>
+      <div id="month-${month.replace('-','')}">`;
+    monthInvs.forEach(inv=>{
+      html+=`<div class="invoice-item">
+        <div class="invoice-info">
+          <div class="invoice-number">${inv.invoice_number}</div>
+          <div class="invoice-date">${inv.date}　$${fmt(inv.amount)}</div>
+        </div>
+        <span class="status-badge status-${inv.status}">${statusLabel(inv.status)}</span>
+        <div class="action-btns">
+          <button class="icon-btn" onclick="cycleStatus('${inv.id}')">🔄</button>
+          <button class="icon-btn danger" onclick="deleteInvoice('${inv.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('invoiceList').innerHTML=html;
+}
+
+function toggleMonth(month){
+  const key=month.replace('-','');
+  const el=document.getElementById('month-'+key);
+  if(!el)return;
+  const isHidden=el.style.display==='none';
+  el.style.display=isHidden?'block':'none';
+  const arrow=document.getElementById('toggle-'+key);
+  if(arrow)arrow.textContent=isHidden?'▼':'▶';
+}
+
+// ─── Lottery ───
+function renderLotteryTab(){
+  const sel=document.getElementById('lotteryPeriod');
+  if(!sel.options.length){
+    getPeriodOptions().forEach(o=>{
+      const opt=document.createElement('option');
+      opt.value=o.value;opt.textContent=o.label;
+      sel.appendChild(opt);
+    });
+  }
+  document.getElementById('lotteryResult').innerHTML='';
+}
+
+function runLottery(){
+  const period=document.getElementById('lotteryPeriod').value;
+  if(!period){showToast('請選擇期別');return;}
+  const numbers=DEFAULT_LOTTERY[period];
+  if(!numbers){showToast('尚無此期對獎號碼，請手動設定');return;}
+
+  let totalWin=0;
+  const matched=[];
+
+  invoices.filter(i=>i.period===period&&i.status==='active').forEach(inv=>{
+    const num=inv.invoice_number.replace(/-/g,'').slice(-8);
+    let win=0;let prize='';
+
+    if(num===numbers.special){win=10000000;prize='特別獎 NT$10,000,000';}
+    else if(num===numbers.special2){win=2000000;prize='特獎 NT$2,000,000';}
+    else{
+      numbers.first.forEach(f=>{
+        if(num.slice(-8)===f){win=200000;prize='頭獎 NT$200,000';}
+      });
+      if(win===0){
+        // 6碼對頭獎末6碼 → 4碼對 → 增開六獎
+        const suffixes=['first_last6','first_last5','first_last4','first_last3'];
+        const sixthSuffixes=numbers.sixth||[];
+        let matchedAny=false;
+        for(let i=0;i<numbers.first.length;i++){
+          const f=numbers.first[i];
+          const last6=f.slice(-6);
+          if(num.slice(-6)===last6&&!matchedAny){win=40000;prize='二獎 NT$40,000';matchedAny=true;break;}
+          if(num.slice(-5)===f.slice(-5)&&!matchedAny){win=10000;prize='三獎 NT$10,000';matchedAny=true;break;}
+          if(num.slice(-4)===f.slice(-4)&&!matchedAny){win=4000;prize='四獎 NT$4,000';matchedAny=true;break;}
+          if(num.slice(-3)===f.slice(-3)&&!matchedAny){win=1000;prize='五獎 NT$1,000';matchedAny=true;break;}
+        }
+        if(!matchedAny){
+          sixthSuffixes.forEach(s6=>{
+            if(num.slice(-3)===s6){win=200;prize='增開六獎 NT$200';}
+          });
+        }
+      }
+    }
+
+    if(win>0){
+      totalWin+=win;
+      matched.push({...inv,win,prize});
+      inv.status='claimed';
+    }
+  });
+
+  save();
+  const resultEl=document.getElementById('lotteryResult');
+  if(totalWin>0){
+    resultEl.innerHTML=`<div class="lottery-result"><h3>🎉 恭喜中獎！</h3><div class="win-amount">+$${fmt(totalWin)}</div><p>共 ${matched.length} 張發票中獎</p></div>`;
+    matched.forEach(m=>{
+      resultEl.innerHTML+=`<div class="card" style="border-left:4px solid var(--gold)"><b>${m.invoice_number}</b>（$${fmt(m.amount)}）<br>中了：${m.prize}</div>`;
+    });
+  }else{
+    resultEl.innerHTML=`<div class="lottery-result"><h3>🙈 這期沒中</h3><p class="lose">本期 ${invoices.filter(i=>i.period===period).length} 張發票都沒有匹配，繼續加油！</p></div>`;
+  }
+  renderInvoices();
+}
+
+// ─── Carrier ───
+function saveCarrier(){
+  const barcode=document.getElementById('carrierBarcode').value.trim();
+  settings.carrier_barcode=barcode;
+  save();
+  showToast('載具已儲存');
+}
+
+function exportInvoices(){
+  const blob=new Blob([JSON.stringify({invoices,settings:{...settings,admin_password:''}},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='invoicehub_backup.json';a.click();
+  showToast('已匯出備份檔');
+}
+
+function importInvoices(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.invoices){
+        invoices=data.invoices;
+        if(data.settings&&data.settings.carrier_barcode){
+          settings.carrier_barcode=data.settings.carrier_barcode;
+          document.getElementById('carrierBarcode').value=settings.carrier_barcode;
+        }
+        save();renderInvoices();
+        showToast('已匯入 '+invoices.length+' 張發票');
+      }
+    }catch(err){showToast('檔案格式錯誤');}
+  };
+  reader.readAsText(file);
+}
+
+function clearAllInvoices(){
+  if(!confirm('確定清除所有發票資料？此操作無法恢復！'))return;
+  invoices=[];save();renderInvoices();showToast('已清除全部');
+}
+
+// ─── QR Scan ───
+function startScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    showToast('您的瀏覽器不支援相機');return;
+  }
+  const readerEl=document.getElementById('reader');
+  readerEl.style.display='block';
+  if(html5Qrcode){
+    html5Qrcode.stop().catch(()=>{});
+  }
+  // Simple QR decode via canvas + qrcode.js fallback
+  try{
+    html5Qrcode=new Html5Qrcode('reader');
+    html5Qrcode.start({facingMode:'environment'},{fps:10,qrbox:250},
+      txt=>{
+        parseQR(txt);
+        html5Qrcode.stop().catch(()=>{});
+        readerEl.style.display='none';
+      },
+      ()=>{}
+    ).catch(err=>{showToast('相機開啟失敗：'+err.message);readerEl.style.display='none';});
+  }catch(e){
+    showToast('掃描功能暫時無法使用，請改用手動輸入');
+    readerEl.style.display='none';
+  }
+}
+
+function parseQR(txt){
+  // 嘗試解析財政部QR Code格式
+  // 格式：||*XXXXXXXXXX*...
+  if(txt.includes('*')){
+    const parts=txt.split('*');
+    if(parts.length>=2){
+      const invNum=parts[1].replace(/-/g,'');
+      document.getElementById('invNumber').value=invNum.slice(0,8);
+      showToast('已解析 QR Code：'+invNum);
+      switchTab('add');
+      return;
+    }
+  }
+  showToast('無法解析此 QR Code，請改用手動輸入');
+}
+
+// ─── Auth ───
+function showSetup(){document.getElementById('lockScreen').classList.add('hidden');document.getElementById('setupScreen').classList.remove('hidden');document.getElementById('mainApp').classList.add('hidden');}
+function showLock(){document.getElementById('lockScreen').classList.remove('hidden');document.getElementById('setupScreen').classList.add('hidden');document.getElementById('mainApp').classList.add('hidden');document.getElementById('pwInput').value='';document.getElementById('lockError').textContent='';unlocked=false;}
+function showMain(){document.getElementById('lockScreen').classList.add('hidden');document.getElementById('setupScreen').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');unlocked=true;renderInvoices();if(settings.carrier_barcode)document.getElementById('carrierBarcode').value=settings.carrier_barcode;}
+function setupPassword(){const pw=document.getElementById('setupPw').value;if(pw.length<4){showToast('密碼至少需要4個字元');return;}settings.admin_password=dcodeIO.bcrypt.hashSync(pw,10);save();showMain();showToast('設定完成！');}
+function unlock(){const pw=document.getElementById('pwInput').value;if(!settings.admin_password){showSetup();return;}if(dcodeIO.bcrypt.compareSync(pw,settings.admin_password)){showMain();}else{document.getElementById('lockError').textContent='密碼錯誤';document.getElementById('pwInput').value='';document.getElementById('pwInput').focus();}}
+function logout(){unlocked=false;showLock();}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timeout);t._timeout=setTimeout(()=>t.classList.remove('show'),2500);}
+
+function init(){
+  load();
+  if(!settings.admin_password){showSetup();}else{showLock();}
+  getPeriodOptions().forEach(o=>{
+    const sel=document.getElementById('lotteryPeriod');
+    const opt=document.createElement('option');
+    opt.value=o.value;opt.textContent=o.label;
+    sel.appendChild(opt);
+  });
+  if(settings.carrier_barcode)document.getElementById('carrierBarcode').value=settings.carrier_barcode;
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!unlocked&&!document.getElementById('lockScreen').classList.contains('hidden'))unlock();if(e.key==='Escape'){} });
+
+// Load html5-qrcode dynamically
+(function(){
+  const script=document.createElement('script');
+  script.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+  document.head.appendChild(script);
+})();
+
+init();
+</script>
+</body>
+</html>
