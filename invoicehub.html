@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
 <style>
-:root{--cyan:#0891B2;--cyan-dark:#0E7490;--gold:#FFD700;--gold-dark:#B8860B;--green:#059669;--red:#DC2626;--bg:#F0F9FA;--card:#FFFFFF;--text:#0F172A;--muted:#64748B;--border:#E2E8F0;--shadow:0 1px 3px rgba(0,0,0,0.1);--radius:12px}
+:root{--cyan:#0891B2;--cyan-dark:#0E7490;--gold:#FFD700;--gold-dark:#B8860B;--gold-light:#FFF8E1;--green:#059669;--green-bright:#10B981;--green-bg:#D1FAE5;--red:#DC2626;--orange:#EA580C;--orange-bg:#FFF7ED;--bg:#F0F9FA;--card:#FFFFFF;--text:#0F172A;--muted:#64748B;--border:#E2E8F0;--shadow:0 1px 3px rgba(0,0,0,0.1);--shadow-lg:0 4px 16px rgba(0,0,0,0.12);--radius:12px;--radius-lg:16px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
 .container{max-width:640px;margin:0 auto;padding:16px}
@@ -27,55 +27,109 @@ body{font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif;back
 .setup-screen input{width:100%;max-width:280px;padding:12px 16px;border:2px solid var(--cyan);border-radius:var(--radius);font-size:1.1rem;font-family:inherit;text-align:center;margin-bottom:12px;background:var(--card)}
 .setup-screen button{padding:12px 32px;background:var(--cyan);color:white;border:none;border-radius:var(--radius);font-size:1rem;font-weight:700;font-family:inherit;cursor:pointer}
 .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin:12px 0}
-.btn-primary{padding:12px 24px;background:var(--cyan);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
-.btn-primary:hover{background:var(--cyan-dark)}
-.btn-secondary{padding:10px 16px;background:#E2E8F0;color:var(--text);border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit}
-.btn-danger{padding:10px 16px;background:#FEE2E2;color:var(--red);border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit}
-input[type="text"],input[type="number"],input[type="date"],select{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-size:1rem;font-family:inherit;background:var(--card);margin-bottom:8px}
-input:focus,select:focus{border-color:var(--cyan);outline:none}
+.card-gold{background:linear-gradient(135deg,#FFFBEB,#FFF3CD);border:2px solid var(--gold);border-radius:var(--radius-lg);padding:20px;margin:12px 0;box-shadow:var(--shadow-lg)}
+.btn-primary{padding:12px 24px;background:var(--cyan);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;transition:all 0.2s}
+.btn-primary:hover{background:var(--cyan-dark);transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+.btn-gold{padding:14px 28px;background:linear-gradient(135deg,var(--gold),#FFA000);color:#1a1a1a;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;transition:all 0.2s}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,160,0,0.4)}
+.btn-secondary{padding:10px 16px;background:#E2E8F0;color:var(--text);border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.btn-secondary:hover{background:#CBD5E1}
+.btn-danger{padding:10px 16px;background:#FEE2E2;color:var(--red);border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.btn-danger:hover{background:#FECACA}
+.btn-small{padding:6px 12px;font-size:0.8rem;border-radius:6px;border:none;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s}
+.btn-edit{background:#E0F2FE;color:#0284C7}
+.btn-edit:hover{background:#BAE6FD}
+input[type="text"],input[type="number"],input[type="date"],input[type="month"],select{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-size:1rem;font-family:inherit;background:var(--card);margin-bottom:8px;transition:border-color 0.2s}
+input:focus,select:focus{border-color:var(--cyan);outline:none;box-shadow:0 0 0 3px rgba(8,145,178,0.1)}
 .form-row{display:flex;gap:8px;flex-wrap:wrap}
 .form-row .flex1{flex:1;min-width:120px}
 .form-row .flex2{flex:2;min-width:200px}
 label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
+/* Search */
+.search-bar{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:150px;margin-bottom:0}
+.search-bar select{margin-bottom:0;max-width:130px}
+/* Invoice list */
 .invoice-list{margin-top:8px}
 .month-group{margin-bottom:16px}
-.month-header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--cyan);color:white;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.95rem}
-.month-header .toggle{font-size:1.2rem}
-.invoice-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.month-header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--cyan);color:white;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.95rem;transition:background 0.2s}
+.month-header:hover{background:var(--cyan-dark)}
+.month-header .toggle{font-size:1.2rem;transition:transform 0.2s}
+.invoice-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;transition:background 0.15s;border-radius:4px}
+.invoice-item:hover{background:#F8FAFC}
 .invoice-item:last-child{border-bottom:none}
 .invoice-info{flex:1;min-width:0}
 .invoice-number{font-weight:700;font-size:1.1rem;letter-spacing:2px}
 .invoice-date{font-size:0.8rem;color:var(--muted)}
 .invoice-amount{font-size:1.1rem;font-weight:700;color:var(--cyan)}
-.status-badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;display:inline-block}
-.status-active{background:#D1FAE5;color:var(--green)}
-.status-claimed{background:#E2E8F0;color:var(--muted)}
-.status-frozen{background:#CFFAFE;color:var(--cyan)}
+/* Status badges - more obvious colors */
+.status-badge{padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:800;display:inline-block;letter-spacing:0.5px}
+.status-active{background:var(--green-bg);color:#065F46;border:2px solid var(--green-bright)}
+.status-claimed{background:#F1F5F9;color:#475569;border:2px solid #94A3B8}
+.status-frozen{background:#E0F2FE;color:#0369A1;border:2px solid #38BDF8}
+.status-donated{background:var(--orange-bg);color:#9A3412;border:2px solid #FB923C}
 .action-btns{display:flex;gap:4px;flex-wrap:wrap}
-.icon-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:0.85rem;font-family:inherit}
+.icon-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:0.85rem;font-family:inherit;transition:all 0.15s}
 .icon-btn:hover{background:#F3F4F6}
 .icon-btn.danger{color:var(--red);border-color:#FECACA}
-.scan-section{text-align:center;padding:16px 0}
-.scan-btn{padding:16px 32px;background:var(--cyan);color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
-.scan-btn:hover{background:var(--cyan-dark)}
-#reader{width:100%;max-width:320px;margin:12px auto;border-radius:var(--radius);overflow:hidden;display:none}
+.icon-btn.danger:hover{background:#FEE2E2}
+/* Scan */
+.scan-section{text-align:center;padding:20px 0}
+.scan-btn{padding:20px 40px;background:linear-gradient(135deg,var(--cyan),#06B6D4);color:white;border:none;border-radius:var(--radius-lg);font-size:1.25rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(8,145,178,0.35);transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;letter-spacing:1px}
+.scan-btn:hover{background:linear-gradient(135deg,#06B6D4,var(--cyan));transform:translateY(-2px);box-shadow:0 6px 20px rgba(8,145,178,0.45)}
+.scan-btn .scan-icon{font-size:1.5rem}
+#reader{width:100%;max-width:340px;margin:12px auto;border-radius:var(--radius);overflow:hidden;display:none;border:3px solid var(--cyan)}
 #reader video{border-radius:var(--radius)}
-.lottery-result{text-align:center;padding:20px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:var(--radius);margin:12px 0;border:2px solid var(--gold)}
+/* Lottery */
+.lottery-result{text-align:center;padding:20px;border-radius:var(--radius-lg);margin:12px 0;border:2px solid var(--gold)}
+.lottery-result.win{background:linear-gradient(135deg,#FFFBEB,#FEF3C7,#FFFBEB);animation:goldPulse 2s ease-in-out infinite}
+.lottery-result.lose{background:#F8FAFC;border-color:#E2E8F0}
 .lottery-result h3{color:var(--gold-dark);font-size:1.2rem;margin-bottom:8px}
-.lottery-result .win-amount{font-size:2rem;font-weight:900;color:var(--red);margin:8px 0}
+.lottery-result .win-amount{font-size:2.2rem;font-weight:900;color:var(--red);margin:8px 0}
+.lottery-result .win-stats{font-size:0.95rem;color:var(--muted);margin:4px 0}
 .lottery-result .lose{font-size:1rem;color:var(--muted)}
+.lottery-win-item{border-left:4px solid var(--gold);padding:10px 14px;margin:8px 0;background:#FFFBEB;border-radius:0 8px 8px 0}
+.lottery-win-item.grand{background:linear-gradient(135deg,#FFF9C4,#FFE082);border-left:5px solid #FFA000;animation:goldShimmer 1.5s ease-in-out infinite}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 8px rgba(255,215,0,0.3)}50%{box-shadow:0 0 25px rgba(255,215,0,0.6)}}
+@keyframes goldShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+/* Carrier */
 .carrier-section{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);text-align:center;margin:12px 0}
-.carrier-barcode{font-family:monospace;font-size:1.4rem;font-weight:700;letter-spacing:3px;color:var(--cyan);background:#F0F9FA;padding:12px 20px;border-radius:8px;display:inline-block;border:2px dashed var(--cyan);margin-top:8px}
-.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
-.stat-card{background:var(--card);border-radius:var(--radius);padding:12px;text-align:center;box-shadow:var(--shadow)}
-.stat-card .label{font-size:0.7rem;color:var(--muted);text-transform:uppercase}
-.stat-card .value{font-size:1.5rem;font-weight:900;color:var(--cyan)}
+.carrier-barcode{font-family:'Courier New',monospace;font-size:2rem;font-weight:900;letter-spacing:4px;color:#0F172A;background:linear-gradient(135deg,#F0F9FA,#E0F2FE);padding:16px 28px;border-radius:10px;display:inline-block;border:3px solid var(--cyan);margin-top:8px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.06)}
+.carrier-donation{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:10px;background:var(--orange-bg);border-radius:8px;border:1px dashed #FB923C}
+.carrier-donation label{color:#9A3412;font-weight:600;margin:0;cursor:pointer}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:12px 0}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:12px 8px;text-align:center;box-shadow:var(--shadow);transition:transform 0.15s}
+.stat-card:hover{transform:translateY(-1px)}
+.stat-card .label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.stat-card .value{font-size:1.4rem;font-weight:900;color:var(--cyan)}
+.stat-card.gold .value{color:var(--gold-dark)}
+/* Toolbar */
 .toolbar{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
-.empty{text-align:center;padding:40px;color:var(--muted)}
-.hidden{display:none!important}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:0.95rem}
+/* Edit Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s}
+.modal-content{background:var(--card);border-radius:var(--radius-lg);padding:24px;width:90%;max-width:420px;box-shadow:var(--shadow-lg);animation:slideUp 0.25s}
+.modal-content h3{margin-bottom:16px;color:var(--cyan-dark)}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions button{flex:1}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* Backdate toggle */
+.backdate-toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;user-select:none}
+.backdate-toggle input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--cyan)}
+.backdate-toggle label{cursor:pointer;font-weight:600;color:var(--text);margin:0}
+/* Lottery custom input */
+.lottery-custom{background:#F8FAFC;border-radius:var(--radius);padding:14px;margin-top:12px;border:1px dashed var(--border)}
+.lottery-custom h4{font-size:0.9rem;margin-bottom:8px;color:var(--cyan-dark)}
+.lottery-custom .prize-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.lottery-custom .prize-row label{min-width:80px;font-weight:600;font-size:0.8rem;color:var(--text);margin:0}
+.lottery-custom .prize-row input{flex:1;min-width:100px;margin-bottom:0;font-family:monospace;font-size:0.9rem}
+/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2937;color:white;padding:10px 20px;border-radius:20px;font-size:0.85rem;z-index:200;opacity:0;transition:opacity 0.3s;font-family:inherit}
 .toast.show{opacity:1}
-@media(max-width:400px){.stats-row{grid-template-columns:1fr 1fr}.form-row .flex1,.form-row .flex2{min-width:100%}}
+.hidden{display:none!important}
+@media(max-width:400px){.stats-row{grid-template-columns:1fr 1fr}.form-row .flex1,.form-row .flex2{min-width:100%}.scan-btn{padding:16px 24px;font-size:1.1rem}.carrier-barcode{font-size:1.4rem;padding:12px 16px}}
 </style>
 </head>
 <body>
@@ -113,6 +167,17 @@ label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
         <div class="stat-card"><div class="label">總發票</div><div class="value" id="totalInvoices">0</div></div>
         <div class="stat-card"><div class="label">未兌</div><div class="value" id="totalActive">0</div></div>
         <div class="stat-card"><div class="label">已凍</div><div class="value" id="totalFrozen">0</div></div>
+        <div class="stat-card gold"><div class="label">捐贈</div><div class="value" id="totalDonated">0</div></div>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 搜尋發票號碼、日期..." oninput="renderInvoices()">
+        <select id="searchStatus" onchange="renderInvoices()">
+          <option value="all">全部狀態</option>
+          <option value="active">未兌</option>
+          <option value="claimed">已兌</option>
+          <option value="frozen">已凍</option>
+          <option value="donated">已捐贈</option>
+        </select>
       </div>
       <div id="invoiceList" class="invoice-list"></div>
     </div>
@@ -123,28 +188,43 @@ label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
         <h3 style="margin-bottom:12px;color:var(--cyan-dark)">手動輸入發票</h3>
         <label>發票號碼（10位）</label>
         <input type="text" id="invNumber" placeholder="AB-12345678" maxlength="12">
+        <!-- 補登切換 -->
+        <div class="backdate-toggle" onclick="toggleBackdate()">
+          <input type="checkbox" id="backdateCheck" style="pointer-events:none">
+          <label style="pointer-events:none">📅 補登過去月份發票</label>
+        </div>
+        <div id="backdateField" class="hidden">
+          <label>選擇補登月份</label>
+          <input type="month" id="invBackdateMonth">
+        </div>
+        <div id="normalMonthField">
+          <label>開立年月</label>
+          <input type="month" id="invMonth">
+        </div>
         <div class="form-row">
-          <div class="flex1">
-            <label>開立年月</label>
-            <input type="month" id="invMonth">
-          </div>
           <div class="flex1">
             <label>消費金額</label>
             <input type="number" id="invAmount" placeholder="0" min="1">
           </div>
         </div>
         <label>載具類型</label>
-        <select id="invCarrierType">
+        <select id="invCarrierType" onchange="onCarrierTypeChange()">
           <option value="mobile_barcode">📱 手機條碼</option>
           <option value="natural_id">🔐 自然人憑證</option>
-          <option value="love_code">❤️ 愛心碼</option>
+          <option value="love_code">❤️ 愛心碼（捐贈）</option>
         </select>
         <input type="text" id="invCarrierNum" placeholder="載具號碼（手機條碼如 /ABC123456）">
+        <div class="form-row" style="margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="invDonation" style="width:auto;margin:0">
+            ❤️ 標記為捐贈發票
+          </label>
+        </div>
         <button class="btn-primary" onclick="addInvoice()">✅ 歸戶發票</button>
       </div>
       <div class="scan-section">
         <p style="color:var(--muted);margin-bottom:12px;">或使用相機掃描 QR Code</p>
-        <button class="scan-btn" onclick="startScan()">📷 開啟相機掃描</button>
+        <button class="scan-btn" onclick="startScan()"><span class="scan-icon">📷</span> 開啟相機掃描</button>
         <div id="reader"></div>
       </div>
     </div>
@@ -152,12 +232,41 @@ label{font-size:0.85rem;color:var(--muted);display:block;margin-bottom:4px}
     <!-- Tab: lottery -->
     <div id="tab-lottery" class="hidden">
       <div class="card">
-        <h3 style="margin-bottom:12px;color:var(--cyan-dark)">自動對獎</h3>
+        <h3 style="margin-bottom:12px;color:var(--cyan-dark)">🔍 自動對獎</h3>
         <label>選擇期別</label>
         <select id="lotteryPeriod"></select>
-        <button class="btn-primary" onclick="runLottery()">🔍 開始對獎</button>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:10px;color:var(--muted);font-size:0.9rem">✨ 自訂對獎號碼（如與內建不同）</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:0.75rem">特別獎</label><input type="text" id="customSpecial" placeholder="8位數" maxlength="8"></div>
+          <div><label style="font-size:0.75rem">特獎</label><input type="text" id="customSpecial2" placeholder="8位數" maxlength="8"></div>
+          <div><label style="font-size:0.75rem">頭獎①</label><input type="text" id="customFirst1" placeholder="8位數" maxlength="8"></div>
+          <div><label style="font-size:0.75rem">頭獎②</label><input type="text" id="customFirst2" placeholder="8位數" maxlength="8"></div>
+          <div><label style="font-size:0.75rem">頭獎③</label><input type="text" id="customFirst3" placeholder="8位數" maxlength="8"></div>
+          <div><label style="font-size:0.75rem">增開六獎</label><input type="text" id="customSixth" placeholder="3位數，逗號分隔"></div>
+        </div>
+        <button class="btn-primary" onclick="runLottery()" style="margin-top:10px">🔍 開始對獎</button>
       </div>
       <div id="lotteryResult"></div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editInvoiceModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:400px;box-shadow:0 20px 40px rgba(0,0,0,0.2)">
+        <h3 style="margin-bottom:12px;color:var(--cyan-dark)">✏️ 編輯發票</h3>
+        <input type="hidden" id="editInvId">
+        <label>發票號碼</label>
+        <input type="text" id="editInvNumber" placeholder="10位發票號碼" maxlength="12">
+        <label>消費金額</label>
+        <input type="number" id="editInvAmount" placeholder="0" min="1">
+        <label>載具號碼</label>
+        <input type="text" id="editInvCarrier" placeholder="載具號碼">
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="saveInvoiceEdit()" style="flex:1;padding:12px;background:var(--cyan);color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer">💾 儲存</button>
+          <button onclick="closeEditInvoiceModal()" style="flex:1;padding:12px;background:#E2E8F0;color:var(--text);border:none;border-radius:8px;font-weight:700;cursor:pointer">取消</button>
+        </div>
+      </div>
     </div>
 
     <!-- Tab: carrier -->
@@ -268,7 +377,7 @@ function addInvoice(){
 function cycleStatus(id){
   const inv=invoices.find(i=>i.id===id);
   if(!inv)return;
-  const cycle={active:'claimed',claimed:'frozen',frozen:'active'};
+  const cycle={active:'claimed',claimed:'frozen',frozen:'active',donated:'active'};
   inv.status=cycle[inv.status];
   save();
   renderInvoices();
@@ -283,8 +392,35 @@ function deleteInvoice(id){
   showToast('已刪除');
 }
 
+function editInvoice(id){
+  const inv=invoices.find(i=>i.id===id);
+  if(!inv)return;
+  document.getElementById('editInvId').value=inv.id;
+  document.getElementById('editInvNumber').value=inv.invoice_number;
+  document.getElementById('editInvAmount').value=inv.amount;
+  document.getElementById('editInvCarrier').value=inv.carrier_number||'';
+  document.getElementById('editInvoiceModal').style.display='flex';
+}
+function closeEditInvoiceModal(){document.getElementById('editInvoiceModal').style.display='none';}
+function saveInvoiceEdit(){
+  const id=document.getElementById('editInvId').value;
+  const inv=invoices.find(i=>i.id===id);
+  if(!inv)return;
+  const num=document.getElementById('editInvNumber').value.trim().toUpperCase();
+  const amount=parseInt(document.getElementById('editInvAmount').value,10);
+  if(!num||num.length<8){showToast('請輸入有效發票號碼');return;}
+  if(!amount||amount<=0){showToast('請輸入有效金額');return;}
+  inv.invoice_number=num;
+  inv.amount=amount;
+  inv.carrier_number=document.getElementById('editInvCarrier').value.trim();
+  save();
+  closeEditInvoiceModal();
+  renderInvoices();
+  showToast('發票已更新');
+}
+
 function statusLabel(s){
-  return{active:'未兌',claimed:'已兌',frozen:'已凍'}[s]||s;
+  return{active:'未兌',claimed:'已兌',frozen:'已凍',donated:'已捐贈'}[s]||s;
 }
 
 // ─── Render ───
@@ -305,14 +441,23 @@ function renderInvoices(){
   document.getElementById('totalActive').textContent=active;
   document.getElementById('totalFrozen').textContent=frozen;
 
-  if(invoices.length===0){
+  // Search and filter
+  const keyword=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const statusFilter=document.getElementById('searchStatus')?.value||'all';
+  let filtered=invoices.filter(inv=>{
+    const matchKw=!keyword||inv.invoice_number.toLowerCase().includes(keyword)||(inv.date||'').includes(keyword)||String(inv.amount).includes(keyword);
+    const matchStatus=statusFilter==='all'||inv.status===statusFilter;
+    return matchKw&&matchStatus;
+  });
+
+  if(filtered.length===0){
     document.getElementById('invoiceList').innerHTML='<div class="empty">尚無歸戶發票<br>試著新增一張吧 📋</div>';
     return;
   }
 
   let html='';
-  groupByMonth(invoices).forEach(month=>{
-    const monthInvs=invoices.filter(i=>(i.period||i.date)===month);
+  groupByMonth(filtered).forEach(month=>{
+    const monthInvs=filtered.filter(i=>(i.period||i.date)===month);
     const [y,m]=month.split('-');
     const label=`${y}年${m}月`;
     const total=monthInvs.reduce((s,i)=>s+i.amount,0);
@@ -330,6 +475,7 @@ function renderInvoices(){
         </div>
         <span class="status-badge status-${inv.status}">${statusLabel(inv.status)}</span>
         <div class="action-btns">
+          <button class="icon-btn" onclick="editInvoice('${inv.id}')">✏️</button>
           <button class="icon-btn" onclick="cycleStatus('${inv.id}')">🔄</button>
           <button class="icon-btn danger" onclick="deleteInvoice('${inv.id}')">🗑</button>
         </div>
@@ -366,38 +512,48 @@ function renderLotteryTab(){
 function runLottery(){
   const period=document.getElementById('lotteryPeriod').value;
   if(!period){showToast('請選擇期別');return;}
-  const numbers=DEFAULT_LOTTERY[period];
-  if(!numbers){showToast('尚無此期對獎號碼，請手動設定');return;}
+  // Use custom numbers if provided
+  const customSpecial=document.getElementById('customSpecial')?.value.trim();
+  const customSpecial2=document.getElementById('customSpecial2')?.value.trim();
+  const customFirst1=document.getElementById('customFirst1')?.value.trim();
+  const customFirst2=document.getElementById('customFirst2')?.value.trim();
+  const customFirst3=document.getElementById('customFirst3')?.value.trim();
+  const customSixth=document.getElementById('customSixth')?.value.trim();
+  const numbers=DEFAULT_LOTTERY[period]||{};
+  const numbers2={
+    special:customSpecial||numbers.special||'',
+    special2:customSpecial2||numbers.special2||'',
+    first:[customFirst1||numbers.first?.[0]||'',customFirst2||numbers.first?.[1]||'',customFirst3||numbers.first?.[2]||''],
+    sixth:(customSixth||numbers.sixth?.join(',')||'').split(',').filter(Boolean)
+  };
+  if(!numbers2.special&&!numbers2.special2&&!numbers2.first[0]){showToast('請輸入對獎號碼');return;}
 
   let totalWin=0;
   const matched=[];
 
-  invoices.filter(i=>i.period===period&&i.status==='active').forEach(inv=>{
+  invoices.filter(i=>i.period===period&&i.status==='active'&&i.status!=='donated').forEach(inv=>{
     const num=inv.invoice_number.replace(/-/g,'').slice(-8);
-    let win=0;let prize='';
+    let win=0;let prize='';let isGrand=false;
 
-    if(num===numbers.special){win=10000000;prize='特別獎 NT$10,000,000';}
-    else if(num===numbers.special2){win=2000000;prize='特獎 NT$2,000,000';}
+    if(numbers2.special&&num===numbers2.special){win=10000000;prize='特別獎 NT$10,000,000';isGrand=true;}
+    else if(numbers2.special2&&num===numbers2.special2){win=2000000;prize='特獎 NT$2,000,000';isGrand=true;}
     else{
-      numbers.first.forEach(f=>{
-        if(num.slice(-8)===f){win=200000;prize='頭獎 NT$200,000';}
+      numbers2.first.forEach(f=>{
+        if(f&&num.slice(-8)===f){win=200000;prize='頭獎 NT$200,000';}
       });
       if(win===0){
-        // 6碼對頭獎末6碼 → 4碼對 → 增開六獎
-        const suffixes=['first_last6','first_last5','first_last4','first_last3'];
-        const sixthSuffixes=numbers.sixth||[];
         let matchedAny=false;
-        for(let i=0;i<numbers.first.length;i++){
-          const f=numbers.first[i];
-          const last6=f.slice(-6);
-          if(num.slice(-6)===last6&&!matchedAny){win=40000;prize='二獎 NT$40,000';matchedAny=true;break;}
+        for(let i=0;i<numbers2.first.length;i++){
+          const f=numbers2.first[i];
+          if(!f)continue;
+          if(num.slice(-6)===f.slice(-6)&&!matchedAny){win=40000;prize='二獎 NT$40,000';matchedAny=true;break;}
           if(num.slice(-5)===f.slice(-5)&&!matchedAny){win=10000;prize='三獎 NT$10,000';matchedAny=true;break;}
           if(num.slice(-4)===f.slice(-4)&&!matchedAny){win=4000;prize='四獎 NT$4,000';matchedAny=true;break;}
           if(num.slice(-3)===f.slice(-3)&&!matchedAny){win=1000;prize='五獎 NT$1,000';matchedAny=true;break;}
         }
         if(!matchedAny){
-          sixthSuffixes.forEach(s6=>{
-            if(num.slice(-3)===s6){win=200;prize='增開六獎 NT$200';}
+          numbers2.sixth.forEach(s6=>{
+            if(s6&&num.slice(-3)===s6){win=200;prize='增開六獎 NT$200';}
           });
         }
       }
@@ -405,20 +561,23 @@ function runLottery(){
 
     if(win>0){
       totalWin+=win;
-      matched.push({...inv,win,prize});
+      matched.push({...inv,win,prize,isGrand});
       inv.status='claimed';
     }
   });
 
   save();
   const resultEl=document.getElementById('lotteryResult');
+  const checkedCount=invoices.filter(i=>i.period===period).length;
   if(totalWin>0){
-    resultEl.innerHTML=`<div class="lottery-result"><h3>🎉 恭喜中獎！</h3><div class="win-amount">+$${fmt(totalWin)}</div><p>共 ${matched.length} 張發票中獎</p></div>`;
+    let resultHtml=`<div class="lottery-result ${matched.some(m=>m.isGrand)?'grand':''}"><h3>🎉 恭喜中獎！</h3><div class="win-amount">+$${fmt(totalWin)}</div><p>共 ${matched.length} 張發票中獎（共對獎 ${checkedCount} 張）</p></div>`;
     matched.forEach(m=>{
-      resultEl.innerHTML+=`<div class="card" style="border-left:4px solid var(--gold)"><b>${m.invoice_number}</b>（$${fmt(m.amount)}）<br>中了：${m.prize}</div>`;
+      resultHtml+=`<div class="card ${m.isGrand?'grand-win':''}" style="border-left:4px solid ${m.isGrand?'#FFD700':'var(--gold)'}">
+        <b>${m.invoice_number}</b>（$${fmt(m.amount)}）<br>中了：${m.prize}${m.isGrand?' ✨':''}</div>`;
     });
+    resultEl.innerHTML=resultHtml;
   }else{
-    resultEl.innerHTML=`<div class="lottery-result"><h3>🙈 這期沒中</h3><p class="lose">本期 ${invoices.filter(i=>i.period===period).length} 張發票都沒有匹配，繼續加油！</p></div>`;
+    resultEl.innerHTML=`<div class="lottery-result"><h3>🙈 這期沒中</h3><p class="lose">本期 ${checkedCount} 張發票都沒有匹配，繼續加油！</p></div>`;
   }
   renderInvoices();
 }
